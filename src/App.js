@@ -1,13 +1,20 @@
 import React, { useEffect } from 'react';
 import { Joystick } from 'react-joystick-component';
 import { makeStyles } from '@material-ui/core/styles';
+import {
+  FormControl,
+  FormHelperText,
+  MenuItem,
+  Select,
+} from '@material-ui/core';
 import ROSLIB from 'roslib';
 
 const useStyles = makeStyles(() => ({
   controlPanel: {
     alignItems: 'center',
     display: 'flex',
-    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    padding: 16,
   },
 }));
 
@@ -20,6 +27,12 @@ const cmdDriveInfo = new ROSLIB.Topic({
   ros: ros,
   name: '/drive_info',
   messageType: 'geometry_msgs/Vector3',
+});
+
+const cmdMouthInfo = new ROSLIB.Topic({
+  ros: ros,
+  name: '/mouth_info',
+  messageType: 'std_msgs/String',
 });
 
 const App = () => {
@@ -51,6 +64,13 @@ const App = () => {
     cmdDriveInfo.publish(drive_msg);
   };
 
+  const handleMouthChange = (event) => {
+    const mouth_msg = new ROSLIB.Message({
+      data: event.target.value,
+    });
+    cmdMouthInfo.publish(mouth_msg);
+  };
+
   return (
     <div className={classes.controlPanel}>
       <Joystick
@@ -59,6 +79,21 @@ const App = () => {
         stickColor="black"
         move={handleMove}
       ></Joystick>
+      <FormControl>
+        <Select
+          autoWidth
+          defaultValue="smile"
+          label="Adjust Face"
+          onChange={handleMouthChange}
+        >
+          <MenuItem value="shock">Shock</MenuItem>
+          <MenuItem value="smile">Smile</MenuItem>
+          <MenuItem value="flat">Flat</MenuItem>
+          <MenuItem value="sad">Sad</MenuItem>
+          <MenuItem value="happy">Happy</MenuItem>
+        </Select>
+        <FormHelperText>Choose facial expression</FormHelperText>
+      </FormControl>
     </div>
   );
 };
